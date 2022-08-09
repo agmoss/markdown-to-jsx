@@ -1,18 +1,31 @@
 import { compiler } from './index'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+
 import * as fs from 'fs'
 import * as theredoc from 'theredoc'
 
-const root = document.body.appendChild(
-  document.createElement('div')
-) as HTMLDivElement
+import { createRoot } from 'react-dom/client'
+import { act } from 'react-dom/test-utils'
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
+
+let root // container
+
+beforeEach(() => {
+  root = document.createElement('div')
+  document.body.appendChild(root)
+})
+
+afterEach(() => {
+  document.body.removeChild(root)
+  root = null
+})
 
 function render(jsx) {
-  return ReactDOM.render(jsx, root)
+  act(() => {
+    createRoot(root).render(jsx)
+  })
 }
-
-afterEach(() => ReactDOM.unmountComponentAtNode(root))
 
 it('should throw if not passed a string (first arg)', () => {
   expect(() => compiler('')).not.toThrow()
@@ -892,7 +905,11 @@ describe('links', () => {
   })
 
   it('should not link URL if it is nested inside an anchor tag', () => {
-    render(compiler('<a href="https://google.com">some text <span>with a link https://google.com</span></a>'))
+    render(
+      compiler(
+        '<a href="https://google.com">some text <span>with a link https://google.com</span></a>'
+      )
+    )
 
     expect(root.innerHTML).toMatchInlineSnapshot(`
       <a href="https://google.com">
@@ -903,7 +920,11 @@ describe('links', () => {
       </a>
     `)
 
-    render(compiler('<a href="https://google.com">some text <span>with a nested link <span>https://google.com</span></span></a>'))
+    render(
+      compiler(
+        '<a href="https://google.com">some text <span>with a nested link <span>https://google.com</span></span></a>'
+      )
+    )
 
     expect(root.innerHTML).toMatchInlineSnapshot(`
       <a href="https://google.com">
@@ -1097,7 +1118,7 @@ describe('links', () => {
     render(compiler('<img src="`<javascript:alert>`(\'alertstr\')"'))
     expect(root.innerHTML).toMatchInlineSnapshot(`
       <span>
-        <img>
+        <img src="true">
         \`('alertstr')"
       </span>
     `)

@@ -1,14 +1,27 @@
 import Markdown from './index'
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
+import { act } from 'react-dom/test-utils'
 
-const root = document.body.appendChild(document.createElement('div'))
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
+
+let root // container
+
+beforeEach(() => {
+  root = document.createElement('div')
+  document.body.appendChild(root)
+})
+
+afterEach(() => {
+  document.body.removeChild(root)
+  root = null
+})
 
 function render(jsx) {
-  return ReactDOM.render(jsx, root)
+  act(() => {
+    createRoot(root).render(jsx)
+  })
 }
-
-afterEach(() => ReactDOM.unmountComponentAtNode(root))
 
 it('accepts markdown content', () => {
   render(<Markdown>_Hello._</Markdown>)

@@ -90,7 +90,7 @@ export namespace MarkdownToJSX {
      */
     createElement: (
       tag: Parameters<CreateElement>[0],
-      props: React.Props<any>,
+      props: React.ClassAttributes<any>,
       ...children: React.ReactChild[]
     ) => JSX.Element
 
